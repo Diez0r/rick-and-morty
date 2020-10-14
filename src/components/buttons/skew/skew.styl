@@ -1,0 +1,73 @@
+.skew-button
+  position relative
+  display inline-flex
+  overflow hidden !important
+  padding 0 10px
+  height 55px
+  border 1px solid #d7dadb !important
+  transform skewX(-30deg)
+  transition border-color 0.2s ease-in-out
+
+  &::after
+    content ''
+    position absolute
+    bottom 0
+    left 0
+    width 100%
+    height 100%
+    background-color $blue
+    transform scaleY(0)
+    transition transform 0.3s ease-in-out
+    transform-origin bottom center
+
+  &.active.blue
+    pointer-events none
+
+  &.active.blue
+    background-color $blue
+
+  &.active.green
+    background-color $green
+
+  &.active.orange
+    background-color $orange
+
+  &.button
+    min-width 150px
+
+  &.pagination
+    width 70px
+
+  &.green::after
+    background-color $green
+
+  &.orange::after
+    background-color $orange
+
+  &.red::after
+    background $red
+
+  &.disabled
+    pointer-events none
+    opacity 0.8
+
+  &:hover
+    &::after
+      transform scaleY(1)
+    .skew-button__text
+      color $black
+
+  &__text
+    z-index 10
+    display flex
+    width 100%
+    height 100%
+    justify-content center
+    align-items center
+    text-decoration none
+    transition color 0.2s ease-in-out
+    color #8b969c
+    transform skewX(30deg)
+
+  &__spinner
+    transform skewX(30deg)

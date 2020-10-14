@@ -1,0 +1,115 @@
+html
+  height 100%
+
+body
+  -moz-osx-font-smoothing grayscale
+  -ms-text-size-adjust 100%
+  -webkit-font-smoothing antialiased
+  -webkit-text-size-adjust 100%
+  display flex
+  flex-direction column
+  height 100%
+  min-height 100%
+  font-family 'Schoolbell', sans-serif
+  font-size 16px
+  font-weight 500
+  background-color $dark-blue
+
+$container-width = 1400px
+
+.container
+  display flex
+  width $container-width
+  margin-right auto
+  margin-left auto
+  padding 0 15px
+  +sm()
+    width 100%
+  +xs()
+    width 100%
+
+.flex-container
+  display flex
+  width $container-width
+  margin-left auto
+  margin-right auto
+
+.row
+  display flex
+  width 100%
+
+.centered
+  margin-right auto
+  margin-left auto
+
+
+// display
+.df
+  display flex
+
+.dif
+  display inline-flex
+
+.db
+  display block
+
+// flex
+.jcsb
+  justify-content space-between
+
+.jcc
+  justify-content center
+
+.jcfe
+  justify-content flex-end
+
+.aic
+  align-items center
+
+.aifs
+  align-items flex-start
+
+.aife
+  align-items flex-end
+
+.fdc
+  flex-direction column
+
+.w100
+  width 100%
+
+// margin
+.mra
+  margin-right auto
+
+.mla
+  margin-left auto
+
+.mba
+  margin-bottom auto
+
+// text
+
+.tac
+  text-align center
+
+.ttu
+  text-transform uppercase
+
+.fz-0
+  font-size 0 !important
+
+.mt10
+  margin-top 10px
+
+.mt15
+  margin-top 15px
+
+.mt20
+  margin-top 20px
+
+.mt25
+  margin-top 25px
+
+.mt30
+  margin-top 30px
