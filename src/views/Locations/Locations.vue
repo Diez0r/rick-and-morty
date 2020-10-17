@@ -5,7 +5,7 @@
     :loading="loading"
     :filters="filters"
     :params="params"
-    :items="locations"
+    :items="locationsFromAPI"
     :current-page="currentPage"
     :pagination-data="pagination"
     @update-filters="updateParams($event)"
@@ -30,7 +30,8 @@ export default {
   data() {
     return {
       urls,
-      locations,
+      //locations,
+      locationsFromAPI : [],
       pagination: {},
       loading: {
         firstLoading: true,
@@ -52,6 +53,17 @@ export default {
         },
       ],
     };
+  },
+
+  async mounted() {
+    const response = await fetch('https://rickandmortyapi.com/api/location/');
+    const result = await response.json();
+
+    const resolvedLocations = await result.results;
+
+    resolvedLocations.forEach((item) => {
+      this.locationsFromAPI.push(item);
+    });
   },
 
   methods: {

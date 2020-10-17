@@ -3,7 +3,7 @@
   <Catalog
     title="Episodes"
     :loading="loading"
-    :items="episodes"
+    :items="episodesFromAPI"
     :current-page="currentPage"
     :pagination-data="pagination"
     @page-change="pageChange"
@@ -27,7 +27,8 @@ export default {
   data() {
     return {
       urls,
-      episodes,
+      //episodes,
+      episodesFromAPI: [],
       pagination: {},
       loading: {
         firstLoading: true,
@@ -38,6 +39,17 @@ export default {
       paramsToSting: '',
       currentPage: 1,
     };
+  },
+
+  async mounted() {
+    const response = await fetch('https://rickandmortyapi.com/api/episode/');
+    const result = await response.json();
+
+    const resolvedEpisodes = await result.results;
+
+    resolvedEpisodes.forEach((item) => {
+      this.episodesFromAPI.push(item);
+    });
   },
 
   methods: {

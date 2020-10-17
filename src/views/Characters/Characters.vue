@@ -1,10 +1,11 @@
 <template>
 <main class="characters mba">
+
   <Catalog
     :loading="loading"
     :filters="filters"
     :params="params"
-    :items="characters"
+    :items="charactersFromAPI"
     :current-page="currentPage"
     :pagination-data="pagination"
     @update-filters="updateParams($event)"
@@ -30,7 +31,8 @@ export default {
   data() {
     return {
       urls,
-      characters,
+      //characters,
+      charactersFromAPI: [],
       pagination: {},
       currentPage: 1, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
@@ -67,10 +69,16 @@ export default {
     };
   },
 
-  // async mounted() {
-  //   const response = await fetch('https://rickandmortyapi.com/api/character/');
-  //   console.log(response);
-  // },
+  async mounted() {
+    const response = await fetch('https://rickandmortyapi.com/api/character/');
+    const result = await response.json();
+
+    const resolvedCharacters = await result.results;
+
+    resolvedCharacters.forEach((item) => {
+      this.charactersFromAPI.push(item);
+    });
+  },
 
   methods: {
     // fentch https://learn.javascript.ru/fetch
