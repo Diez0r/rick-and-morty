@@ -33,6 +33,29 @@ export default {
     };
   },
 
+  async mounted() {
+    const locationId = this.$route.params.id;
+
+    const responseLocation = await fetch(`https://rickandmortyapi.com/api/location/${locationId}`);
+    const resultLocation = await responseLocation.json();
+
+    if (responseLocation.ok) {
+      this.loading.data = false;
+      this.locationData = resultLocation;
+    }
+
+    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
+    const charactersToJSON = await responseCharacters.json();
+
+    const result = charactersToJSON.results;
+
+    const charactersForCurrentLocation = result.filter((item) => item.origin.url.includes(`https://rickandmortyapi.com/api/location/${locationId}`));
+
+    if (responseCharacters.ok) {
+      this.loading.additionalContent = false;
+      this.characters = charactersForCurrentLocation;
+    }
+  },
 
   methods: {
     //  нужно два запроса

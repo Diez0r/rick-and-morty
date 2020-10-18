@@ -49,12 +49,13 @@
             :key="`${index}__feature`"
             class="detailed__description"
           >
-            <template v-if="key !== 'image' && !(value instanceof Object)">
+            <template v-if="key !== 'image' && key !== 'url' && key !== 'created' && !(value instanceof Object)">
               <p class="detailed__feature title-blue">
                 {{ key | firstLetterToUppercase }}:
               </p>
               <p class="detailed__definition">
-                {{ removePartString(value, 'dimension') | firstLetterToUppercase }}
+<!--                {{ removePartString(value, 'dimension') | firstLetterToUppercase }}-->
+                {{ value }}
               </p>
             </template>
           </div>
@@ -142,7 +143,7 @@
 </template>
 
 <script>
-import { firstLetterToUppercase, removePartString } from '../utils/utils';
+import { firstLetterToUppercase, removePartString } from '../utils/utils.js';
 import SkeletonAvatar from '../components/skeleton/SkeletonAvatar.vue';
 import SkeletonLine from '../components/skeleton/SkeletonLine.vue';
 import SkeletonCard from '../components/skeleton/SkeletonCard.vue';

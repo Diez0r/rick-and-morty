@@ -22,7 +22,7 @@ export default {
   data() {
     return {
       urls,
-      episodeId: 1, // Нужно дополнить, что бы при загрузке уже была инфа
+      episodeId: null, // Нужно дополнить, что бы при загрузке уже была инфа
       episodeData: {},
       characterIds: [],
       characters: [],
@@ -31,6 +31,29 @@ export default {
         additionalContent: true,
       },
     };
+  },
+
+  async mounted() {
+    this.episodeId = this.$route.params.id;
+
+    const responseEpisode = await fetch(`https://rickandmortyapi.com/api/episode/${this.episodeId}`);
+    const resultEpisodeToJSON = await responseEpisode.json();
+
+    if (responseEpisode.ok) {
+      this.loading.data = false;
+      this.episodeData = resultEpisodeToJSON;
+    }
+
+    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
+    const charactersToJSON = await responseCharacters.json();
+
+    const result = charactersToJSON.results;
+    const characterForCurrentEpisodes = result.filter((item) => item.episode.includes(`https://rickandmortyapi.com/api/episode/${this.episodeId}`));
+
+    if (responseCharacters.ok) {
+      this.loading.additionalContent = false;
+      this.characters = characterForCurrentEpisodes;
+    }
   },
 
   methods: {

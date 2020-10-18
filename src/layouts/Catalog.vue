@@ -256,7 +256,7 @@ export default {
       return selectedFilters;
     },
 
-    pageData() {
+      pageData() {
       let pageData = {};
 
       if (this.isCharacterPage) {

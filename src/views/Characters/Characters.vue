@@ -19,7 +19,6 @@
 <script>
 import urls from '../../constants';
 import Catalog from '../../layouts/Catalog.vue';
-import characters from '../../fakeData/characters';
 
 export default {
   name: 'CharactersPage',
@@ -31,10 +30,9 @@ export default {
   data() {
     return {
       urls,
-      //characters,
       charactersFromAPI: [],
       pagination: {},
-      currentPage: 1, // Нужно дополнить, что бы при загрузке уже была инфа
+      currentPage: null, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
       paramsToSting: '',
       params: {
@@ -70,10 +68,21 @@ export default {
   },
 
   async mounted() {
-    const response = await fetch('https://rickandmortyapi.com/api/character/');
-    const result = await response.json();
+    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
+    const charactersToJSON = await responseCharacters.json();
 
-    const resolvedCharacters = await result.results;
+    const resolvedInfo = await charactersToJSON.info;
+    const resolvedCharacters = await charactersToJSON.results;
+
+    this.pagination = resolvedInfo;
+
+    if (!resolvedInfo.prev) {
+      this.currentPage = 1;
+    } else if (resolvedInfo.prev < 9) {
+      this.currentPage = resolvedInfo.next.toString().slice(-1);
+    } else {
+      this.currentPage = resolvedInfo.next.toString().slice(-2);
+    }
 
     resolvedCharacters.forEach((item) => {
       this.charactersFromAPI.push(item);

@@ -56,14 +56,25 @@ export default {
   },
 
   async mounted() {
-    const response = await fetch('https://rickandmortyapi.com/api/location/');
-    const result = await response.json();
+    const responseLocations = await fetch('https://rickandmortyapi.com/api/location/');
+    const locationsToJSON = await responseLocations.json();
 
-    const resolvedLocations = await result.results;
+    const resolvedInfo = await locationsToJSON.info;
+    const resolvedLocations = await locationsToJSON.results;
 
-    resolvedLocations.forEach((item) => {
-      this.locationsFromAPI.push(item);
-    });
+    this.pagination = resolvedInfo;
+
+    if (!resolvedInfo.prev) {
+      this.currentPage = 1;
+    } else if (resolvedInfo.prev < 9) {
+      this.currentPage = resolvedInfo.next.toString().slice(-1);
+    } else {
+      this.currentPage = resolvedInfo.next.toString().slice(-2);
+    }
+
+    if (responseLocations.ok) {
+      resolvedLocations.forEach((item) => this.locationsFromAPI.push(item));
+    }
   },
 
   methods: {

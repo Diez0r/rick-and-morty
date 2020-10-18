@@ -15,7 +15,6 @@
 <script>
 import Catalog from '../../layouts/Catalog.vue';
 import urls from '../../constants';
-import episodes from '../../fakeData/episodes';
 
 export default {
   name: 'Episodes',
@@ -27,7 +26,6 @@ export default {
   data() {
     return {
       urls,
-      //episodes,
       episodesFromAPI: [],
       pagination: {},
       loading: {
@@ -37,19 +35,32 @@ export default {
       },
       addMoreEpisodes: false,
       paramsToSting: '',
-      currentPage: 1,
+      currentPage: null,
     };
   },
 
   async mounted() {
-    const response = await fetch('https://rickandmortyapi.com/api/episode/');
-    const result = await response.json();
+    const responseEpisodes = await fetch('https://rickandmortyapi.com/api/episode/');
+    const episodesToJSON = await responseEpisodes.json();
 
-    const resolvedEpisodes = await result.results;
+    const resolvedInfo = await episodesToJSON.info;
+    const resolvedEpisodes = await episodesToJSON.results;
 
-    resolvedEpisodes.forEach((item) => {
-      this.episodesFromAPI.push(item);
-    });
+    this.pagination = resolvedInfo;
+
+    if (!resolvedInfo.prev) {
+      this.currentPage = 1;
+    } else if (resolvedInfo.prev < 9) {
+      this.currentPage = resolvedInfo.next.toString().slice(-1);
+    } else {
+      this.currentPage = resolvedInfo.next.toString().slice(-2);
+    }
+
+    if (responseEpisodes.ok) {
+      resolvedEpisodes.forEach((item) => {
+        this.episodesFromAPI.push(item);
+      });
+    }
   },
 
   methods: {
