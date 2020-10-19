@@ -68,36 +68,44 @@ export default {
   },
 
   async mounted() {
-    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
-    const charactersToJSON = await responseCharacters.json();
-
-    const resolvedInfo = await charactersToJSON.info;
-    const resolvedCharacters = await charactersToJSON.results;
-
-    this.pagination = resolvedInfo;
-
-    if (!resolvedInfo.prev) {
-      this.currentPage = 1;
-    } else if (resolvedInfo.prev < 9) {
-      this.currentPage = resolvedInfo.next.toString().slice(-1);
-    } else {
-      this.currentPage = resolvedInfo.next.toString().slice(-2);
-    }
-
-    resolvedCharacters.forEach((item) => {
-      this.charactersFromAPI.push(item);
-    });
+    await this.loadCharacters();
   },
 
   methods: {
     // fentch https://learn.javascript.ru/fetch
     //  https://learn.javascript.ru/async
+    // TODO переделать запросы на промисах
+    // пагинация - подставляем в роут и в запрос номер страницы
+    // loadMore - берем массив персонажей с текущей страницы и добавляем к нему массив со следющей страницы
+    // watch на квери
     updateParams() {
 
     },
 
-    pageChange() {
+    pageChange(page) {
+      console.log(page);
+    },
 
+    async loadCharacters(page = 1) {
+      const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
+      const charactersToJSON = await responseCharacters.json();
+
+      const resolvedInfo = await charactersToJSON.info;
+      const resolvedCharacters = await charactersToJSON.results;
+
+      this.pagination = resolvedInfo;
+
+      if (!resolvedInfo.prev) {
+        this.currentPage = 1;
+      } else if (resolvedInfo.prev < 9) {
+        this.currentPage = resolvedInfo.next.toString().slice(-1);
+      } else {
+        this.currentPage = resolvedInfo.next.toString().slice(-2);
+      }
+
+      resolvedCharacters.forEach((item) => {
+        this.charactersFromAPI.push(item);
+      });
     },
 
     loadMoreCharacters() {
