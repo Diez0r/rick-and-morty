@@ -67,59 +67,84 @@ export default {
     };
   },
 
-  async mounted() {
-    await this.loadCharacters();
+  mounted() {
+    this.checkCurrentPage();
+    this.loadCharacters(this.currentPage);
   },
 
+  // watch: {
+
+  // },
+
   methods: {
-    // fentch https://learn.javascript.ru/fetch
+    // fetch https://learn.javascript.ru/fetch
     //  https://learn.javascript.ru/async
     // TODO переделать запросы на промисах
-    // пагинация - подставляем в роут и в запрос номер страницы
+    // пагинация - подставляем в роут и в запрос номер страницы +
     // loadMore - берем массив персонажей с текущей страницы и добавляем к нему массив со следющей страницы
     // watch на квери
     // на главной - Promise All с случайными персонажами, эпизодами, локациями
-    updateParams() {
 
+    checkCurrentPage() {
+      this.$route.query.page ? this.currentPage = this.$route.query.page : this.currentPage = 1;
     },
 
-    pageChange(page) {
-      console.log(page);
-    },
 
-    loadCharacters(page = 1) {
-      // const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
-      // const charactersToJSON = await responseCharacters.json();
-      //
-      // const resolvedInfo = await charactersToJSON.info;
-      // const resolvedCharacters = await charactersToJSON.results;
-      let resolvedCharacters;
+    loadCharacters(currentPage) {
+      let page = currentPage;
 
-      let promise = fetch('https://rickandmortyapi.com/api/character/')
+      if (this.addMoreCharacters) {
+        page = currentPage + 1;
+      }
+
+      const promise = fetch(`https://rickandmortyapi.com/api/character/?page=${page}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
           return response.json();
         })
-        .then((results) => results.results.forEach((item) => this.charactersFromAPI.push(item)))
+        .then((results) => {
+          results.results.forEach((item) => this.charactersFromAPI.push(item));
+
+          this.pagination = results.info;
+          this.currentPage = currentPage;
+
+          console.log('from promise', currentPage);
+
+          const query = {
+            page: currentPage,
+          };
+
+          this.$router.push({ query });
+        })
         .catch((e) => console.log('error', e));
+    },
 
-      //this.pagination = resolvedInfo;
+    updateParams(filter) {
+      console.log(filter.value);
+      if (filter.paramsName === 'name') this.params.name = filter.value;
+      if (filter.paramsName === 'status') this.params.status = filter.value;
+      if (filter.paramsName === 'species') this.params.species = filter.value;
+      if (filter.paramsName === 'gender') this.params.gender = filter.value;
 
-      // if (!resolvedInfo.prev) {
-      //   this.currentPage = 1;
-      // } else if (resolvedInfo.prev < 9) {
-      //   this.currentPage = resolvedInfo.next.toString().slice(-1);
-      // } else {
-      //   this.currentPage = resolvedInfo.next.toString().slice(-2);
-      // }
+      // const query = this.params;
+      //
+      // this.$router.push({ query });
+    },
 
-      // resolvedCharacters.forEach((item) => {
-      //   this.charactersFromAPI.push(item);
-      // });
+    pageChange(currentPage) {
+      this.charactersFromAPI = [];
+
+      const query = {
+        page: currentPage,
+      };
+
+      this.$router.push({ query });
+      this.loadCharacters(Number(currentPage));
     },
 
     loadMoreCharacters() {
-
+      this.addMoreCharacters = true;
+      this.loadCharacters(Number(this.currentPage));
     },
 
     resetFilters() {
