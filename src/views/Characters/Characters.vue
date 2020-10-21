@@ -32,7 +32,7 @@ export default {
       urls,
       charactersFromAPI: [],
       pagination: {},
-      currentPage: null, // Нужно дополнить, что бы при загрузке уже была инфа
+      currentPage: this.$route.query.page || 1, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
       paramsToSting: '',
       params: {
@@ -68,7 +68,6 @@ export default {
   },
 
   mounted() {
-    this.checkCurrentPage();
     this.loadCharacters(this.currentPage);
   },
 
@@ -84,10 +83,6 @@ export default {
     // loadMore - берем массив персонажей с текущей страницы и добавляем к нему массив со следющей страницы
     // watch на квери
     // на главной - Promise All с случайными персонажами, эпизодами, локациями
-
-    checkCurrentPage() {
-      this.$route.query.page ? this.currentPage = this.$route.query.page : this.currentPage = 1;
-    },
 
 
     loadCharacters(currentPage) {
@@ -106,15 +101,25 @@ export default {
           results.results.forEach((item) => this.charactersFromAPI.push(item));
 
           this.pagination = results.info;
-          this.currentPage = currentPage;
 
-          console.log('from promise', currentPage);
+          if (this.addMoreCharacters) {
+            this.currentPage = currentPage + 1;
 
-          const query = {
-            page: currentPage,
-          };
+            const query = {
+              page: currentPage + 1,
+            };
 
-          this.$router.push({ query });
+            this.$router.push({ query });
+            console.log('load more', page);
+          } else {
+            this.currentPage = currentPage;
+
+            const query = {
+              page: currentPage,
+            };
+
+            this.$router.push({ query });
+          }
         })
         .catch((e) => console.log('error', e));
     },
@@ -126,9 +131,7 @@ export default {
       if (filter.paramsName === 'species') this.params.species = filter.value;
       if (filter.paramsName === 'gender') this.params.gender = filter.value;
 
-      // const query = this.params;
-      //
-      // this.$router.push({ query });
+      // поиск осуществляется на бэке, глянуть доку по API там есть запрос
     },
 
     pageChange(currentPage) {
