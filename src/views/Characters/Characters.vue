@@ -68,12 +68,14 @@ export default {
   },
 
   mounted() {
-    this.loadCharacters(this.currentPage);
+    //this.loadCharacters(this.currentPage);
   },
 
-  // watch: {
-
-  // },
+  watch: {
+    '$route.query': function () {
+      this.fillChosenFilters();
+    },
+  },
 
   methods: {
     // fetch https://learn.javascript.ru/fetch
@@ -124,14 +126,32 @@ export default {
         .catch((e) => console.log('error', e));
     },
 
-    updateParams(filter) {
-      console.log(filter.value);
-      if (filter.paramsName === 'name') this.params.name = filter.value;
-      if (filter.paramsName === 'status') this.params.status = filter.value;
-      if (filter.paramsName === 'species') this.params.species = filter.value;
-      if (filter.paramsName === 'gender') this.params.gender = filter.value;
+    updateParams({ value, paramsName }) {
+      console.log(paramsName, value);
+
+      if (this.params[paramsName] !== value) {
+        this.params[paramsName] = value;
+        console.log('true');
+      } else {
+        this.params[paramsName] = '';
+        console.log('false');
+      }
+
+      let query = this.params;
+
+      this.$router.push({ query });
 
       // поиск осуществляется на бэке, глянуть доку по API там есть запрос
+    },
+
+    fillChosenFilters() {
+      for (const filterType in this.params) {
+        if (this.$route.query[filterType]) {
+          this.params[filterType] = this.$route.query[filterType];
+        } else {
+          this.params[filterType] = '';
+        }
+      }
     },
 
     pageChange(currentPage) {
@@ -151,7 +171,16 @@ export default {
     },
 
     resetFilters() {
+      this.params = {
+        name: '',
+        status: '',
+        species: '',
+        gender: '',
+      };
 
+      let query = this.params;
+
+      this.$router.push({ query })
     },
   },
 };
