@@ -34,7 +34,7 @@ export default {
       pagination: {},
       currentPage: this.$route.query.page || 1, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
-      paramsToSting: '',
+      paramsToString: '',
       params: {
         name: '', // Нужно дополнить, что бы при загрузке уже была инфа
         status: '', // Нужно дополнить, что бы при загрузке уже была инфа
@@ -75,7 +75,23 @@ export default {
     '$route.query': function () {
       //this.fillChosenFilters();
 
-      console.log(111)
+      let queryString = '';
+
+      if (!this.$route.query.page) {
+        Object.entries(this.$route.query).forEach((item) => {
+          const substring = item.join('=');
+
+          if (queryString.length > 0) {
+            queryString += `&${substring}`;
+          } else {
+            queryString = `?${substring}`;
+          }
+        });
+
+        console.log(queryString);
+
+        this.updateCharacters(queryString);
+      }
     },
   },
 
@@ -128,35 +144,46 @@ export default {
         .catch((e) => console.log('error', e));
     },
 
+    updateCharacters(queryString) {
+      const promise = fetch(`https://rickandmortyapi.com/api/character/${queryString}`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((results) => {
+          this.charactersFromAPI = [];
+          results.results.forEach((item) => this.charactersFromAPI.push(item));
+
+          results.results.forEach((item) => console.log(item));
+
+          this.pagination = results.info;
+        })
+        .catch((e) => console.log('error', e));
+    },
+
     updateParams({ value, paramsName }) {
       console.log(paramsName, value);
 
-      this.$route.query[paramsName] = value;
-      console.log('true');
+      const query = {};
 
-      // if (this.params[paramsName] !== value) {
-      //   this.params[paramsName] = value;
-      //   console.log('true');
-      // } else {
-      //   this.params[paramsName] = '';
-      //   console.log('false');
-      // }
-      //
-      // let query = this.params;
-      //
-      // this.$router.push({ query });
-
-      // поиск осуществляется на бэке, глянуть доку по API там есть запрос
-    },
-
-    fillChosenFilters() {
-      for (const filterType in this.params) {
-        if (this.$route.query[filterType]) {
-          this.params[filterType] = this.$route.query[filterType];
-        } else {
-          this.params[filterType] = '';
-        }
+      if (this.params[paramsName] !== value) {
+        this.params[paramsName] = value;
+        console.log('true');
+      } else {
+        this.params[paramsName] = '';
+        console.log('false');
       }
+
+      Object.entries(this.params).forEach((item) => {
+        if (item[1].length > 0) {
+          console.log(item);
+          query[item[0]] = item[1];
+        }
+      });
+
+      console.log(query);
+
+      this.$router.push({ query });
     },
 
     pageChange(currentPage) {
