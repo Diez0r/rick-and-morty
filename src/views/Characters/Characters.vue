@@ -68,12 +68,14 @@ export default {
   },
 
   mounted() {
-    //this.loadCharacters(this.currentPage);
+    this.loadCharacters(this.currentPage);
   },
 
   watch: {
     '$route.query': function () {
-      this.fillChosenFilters();
+      //this.fillChosenFilters();
+
+      console.log(111)
     },
   },
 
@@ -129,17 +131,20 @@ export default {
     updateParams({ value, paramsName }) {
       console.log(paramsName, value);
 
-      if (this.params[paramsName] !== value) {
-        this.params[paramsName] = value;
-        console.log('true');
-      } else {
-        this.params[paramsName] = '';
-        console.log('false');
-      }
+      this.$route.query[paramsName] = value;
+      console.log('true');
 
-      let query = this.params;
-
-      this.$router.push({ query });
+      // if (this.params[paramsName] !== value) {
+      //   this.params[paramsName] = value;
+      //   console.log('true');
+      // } else {
+      //   this.params[paramsName] = '';
+      //   console.log('false');
+      // }
+      //
+      // let query = this.params;
+      //
+      // this.$router.push({ query });
 
       // поиск осуществляется на бэке, глянуть доку по API там есть запрос
     },
