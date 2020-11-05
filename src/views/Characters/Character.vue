@@ -38,32 +38,37 @@ export default {
   },
 
   async mounted() {
-    this.characterId = this.$route.params.id;
-
-    const responseCharacter = await fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`);
-    const resultCharacter = await responseCharacter.json();
-
-    if (responseCharacter.ok) {
-      this.loading.data = false;
-      this.characterData = resultCharacter;
-    }
-
-    const responseEpisodes = await fetch('https://rickandmortyapi.com/api/episode/');
-    const episodesToJSON = await responseEpisodes.json();
-
-    const result = episodesToJSON.results;
-    const episodesForCurrentCharacter = result.filter((item) => item.characters.includes(`https://rickandmortyapi.com/api/character/${this.characterId}`));
-
-    if (responseEpisodes.ok) {
-      this.loading.additionalContent = false;
-      this.episodes = episodesForCurrentCharacter;
-    }
+    await this.getCharacterInfoFromAPI();
+    await this.getInfoAboutThisCharacterEpisodes();
   },
 
   methods: {
-    //  нужны два запроса
-    //  первый - возвращет информацию о персонаже
-    //  второй - из полученных данных о персанаже нужно взять эпизод, и  запросить информацию о эпизоде
+    async getCharacterInfoFromAPI() {
+      this.characterId = this.$route.params.id;
+
+      const responseCharacter = await fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`);
+      const resultCharacter = await responseCharacter.json();
+
+      if (responseCharacter.ok) {
+        this.loading.data = false;
+        this.characterData = resultCharacter;
+      }
+    },
+
+    async getInfoAboutThisCharacterEpisodes() {
+      const episodesIdArray = [];
+      this.characterData.episode.forEach((item) => episodesIdArray.push(item.substr(40)));
+
+      const episodesIdToString = episodesIdArray.join(',');
+
+      const responseEpisodes = await fetch(`https://rickandmortyapi.com/api/episode/${episodesIdToString}`);
+      const episodesToJSON = await responseEpisodes.json();
+
+      if (responseEpisodes.ok) {
+        this.loading.additionalContent = false;
+        this.episodes = episodesToJSON;
+      }
+    }
   },
 };
 </script>
