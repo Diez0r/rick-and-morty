@@ -55,6 +55,8 @@ export default {
       }
     },
 
+    // TODO если 1 эпизод, то он приходит в виде объекта, завис на этой хуйне жестко
+
     async getInfoAboutThisCharacterEpisodes() {
       const episodesIdArray = [];
       this.characterData.episode.forEach((item) => episodesIdArray.push(item.substr(40)));
@@ -68,7 +70,7 @@ export default {
         this.loading.additionalContent = false;
         this.episodes = episodesToJSON;
       }
-    }
+    },
   },
 };
 </script>

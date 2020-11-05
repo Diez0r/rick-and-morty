@@ -67,32 +67,26 @@ export default {
     };
   },
 
-  mounted() {
-    this.loadCharacters(this.currentPage);
-  },
-
   watch: {
     '$route.query': function () {
-      //this.fillChosenFilters();
-
-      let queryString = '';
-
       if (!this.$route.query.page) {
-        Object.entries(this.$route.query).forEach((item) => {
-          const substring = item.join('=');
-
-          if (queryString.length > 0) {
-            queryString += `&${substring}`;
-          } else {
-            queryString = `?${substring}`;
-          }
-        });
-
-        console.log(queryString);
-
-        this.updateCharacters(queryString);
+        this.fillChosenFiltersFromQuery();
       }
     },
+  },
+
+  mounted() {
+    if (!this.$route.query.length || this.$route.query.page) {
+      this.loadCharacters(this.currentPage);
+      console.log('page');
+    }
+
+    if (this.$route.query.name || this.$route.query.status || this.$route.query.species || this.$route.query.gender) {
+      this.fillChosenFiltersFromQuery();
+      console.log('filter');
+    }
+
+    // TODO условия для загрузки страницы продумать
   },
 
   methods: {
@@ -154,16 +148,12 @@ export default {
           this.charactersFromAPI = [];
           results.results.forEach((item) => this.charactersFromAPI.push(item));
 
-          results.results.forEach((item) => console.log(item));
-
           this.pagination = results.info;
         })
         .catch((e) => console.log('error', e));
     },
 
     updateParams({ value, paramsName }) {
-      console.log(paramsName, value);
-
       const query = {};
 
       if (this.params[paramsName] !== value) {
@@ -174,14 +164,11 @@ export default {
         console.log('false');
       }
 
-      Object.entries(this.params).forEach((item) => {
-        if (item[1].length > 0) {
-          console.log(item);
-          query[item[0]] = item[1];
+      Object.entries(this.params).forEach(([filterName, filterValue]) => {
+        if (filterValue.length > 0) {
+          query[filterName] = filterValue;
         }
       });
-
-      console.log(query);
 
       this.$router.push({ query });
     },
@@ -210,9 +197,24 @@ export default {
         gender: '',
       };
 
-      let query = this.params;
+      const query = this.params;
 
-      this.$router.push({ query })
+      this.$router.push({ query });
+    },
+
+    fillChosenFiltersFromQuery() {
+      let queryString = '';
+      Object.entries(this.$route.query).forEach((item) => {
+        const substring = item.join('=');
+
+        if (queryString.length > 0) {
+          queryString += `&${substring}`;
+        } else {
+          queryString = `?${substring}`;
+        }
+      });
+
+      this.updateCharacters(queryString);
     },
   },
 };
