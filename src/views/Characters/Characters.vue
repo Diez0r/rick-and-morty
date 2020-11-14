@@ -76,14 +76,15 @@ export default {
   },
 
   mounted() {
-    if (!this.$route.query.length || this.$route.query.page) {
-      this.loadCharacters(this.currentPage);
-      console.log('page');
-    }
-
     if (this.$route.query.name || this.$route.query.status || this.$route.query.species || this.$route.query.gender) {
       this.fillChosenFiltersFromQuery();
       console.log('filter');
+      return;
+    }
+
+    if (!this.$route.query.length || this.$route.query.page) {
+      this.loadCharacters(this.currentPage);
+      console.log('page');
     }
 
     // TODO условия для загрузки страницы продумать
@@ -139,6 +140,7 @@ export default {
     },
 
     updateCharacters(queryString) {
+      console.log('1111', queryString);
       const promise = fetch(`https://rickandmortyapi.com/api/character/${queryString}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
@@ -162,6 +164,12 @@ export default {
       } else {
         this.params[paramsName] = '';
         console.log('false');
+
+        query.page = this.currentPage;
+
+        this.$router.push({ query });
+
+        this.pageChange(this.currentPage);
       }
 
       Object.entries(this.params).forEach(([filterName, filterValue]) => {
@@ -176,9 +184,8 @@ export default {
     pageChange(currentPage) {
       this.charactersFromAPI = [];
 
-      const query = {
-        page: currentPage,
-      };
+      const query = {};
+      query.page = currentPage;
 
       this.$router.push({ query });
       this.loadCharacters(Number(currentPage));

@@ -28,8 +28,9 @@ export default {
         location: {},
       },
       episodesIds: [],
+      episodesIdToString: '',
       episodes: [],
-      characterId: null, // Нужно дополнить, что бы при загрузке уже была инфа
+      characterId: this.$route.params.id, // Нужно дополнить, что бы при загрузке уже была инфа
       loading: {
         data: true,
         additionalContent: true,
@@ -37,39 +38,49 @@ export default {
     };
   },
 
-  async mounted() {
-    await this.getCharacterInfoFromAPI();
-    await this.getInfoAboutThisCharacterEpisodes();
+  mounted() {
+    this.getCharacterInfoFromAPI();
   },
 
   methods: {
-    async getCharacterInfoFromAPI() {
-      this.characterId = this.$route.params.id;
+    getCharacterInfoFromAPI() {
+      const responseCharacter = fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((result) => {
+          this.loading.data = false;
+          this.characterData = result;
 
-      const responseCharacter = await fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`);
-      const resultCharacter = await responseCharacter.json();
-
-      if (responseCharacter.ok) {
-        this.loading.data = false;
-        this.characterData = resultCharacter;
-      }
+          this.episodesIdArrayToString();
+        });
     },
 
-    // TODO если 1 эпизод, то он приходит в виде объекта, завис на этой хуйне жестко
-
-    async getInfoAboutThisCharacterEpisodes() {
+    episodesIdArrayToString() {
       const episodesIdArray = [];
       this.characterData.episode.forEach((item) => episodesIdArray.push(item.substr(40)));
 
-      const episodesIdToString = episodesIdArray.join(',');
+      this.episodesIdToString = episodesIdArray.join(',');
 
-      const responseEpisodes = await fetch(`https://rickandmortyapi.com/api/episode/${episodesIdToString}`);
-      const episodesToJSON = await responseEpisodes.json();
+      this.getInfoAboutThisCharacterEpisodes();
+    },
 
-      if (responseEpisodes.ok) {
-        this.loading.additionalContent = false;
-        this.episodes = episodesToJSON;
-      }
+    getInfoAboutThisCharacterEpisodes() {
+      const responseEpisodes = fetch(`https://rickandmortyapi.com/api/episode/${this.episodesIdToString}`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((result) => {
+          this.loading.additionalContent = false;
+
+          if (result.length) {
+            this.episodes = result;
+          } else {
+            this.episodes.push(result);
+          }
+        });
     },
   },
 };
