@@ -35,49 +35,59 @@ export default {
       },
       addMoreEpisodes: false,
       paramsToSting: '',
-      currentPage: null,
+      currentPage: this.$route.query.page || 1,
     };
   },
 
-  async mounted() {
-    const responseEpisodes = await fetch('https://rickandmortyapi.com/api/episode/');
-    const episodesToJSON = await responseEpisodes.json();
-
-    const resolvedInfo = await episodesToJSON.info;
-    const resolvedEpisodes = await episodesToJSON.results;
-
-    this.pagination = resolvedInfo;
-
-    if (!resolvedInfo.prev) {
-      this.currentPage = 1;
-    } else if (resolvedInfo.prev < 9) {
-      this.currentPage = resolvedInfo.next.toString().slice(-1);
-    } else {
-      this.currentPage = resolvedInfo.next.toString().slice(-2);
-    }
-
-    if (responseEpisodes.ok) {
-      resolvedEpisodes.forEach((item) => {
-        this.episodesFromAPI.push(item);
-      });
-    }
+  mounted() {
+    this.loadEpisodes(this.currentPage);
   },
 
   methods: {
-    updateParams() {
+    loadEpisodes(currentPage) {
+      let page = currentPage;
 
+      if (this.addMoreEpisodes) {
+        page = currentPage + 1;
+      }
+
+      const promise = fetch(`https://rickandmortyapi.com/api/episode/?page=${page}`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((results) => {
+          results.results.forEach((item) => this.episodesFromAPI.push(item));
+
+          this.pagination = results.info;
+
+          if (this.addMoreEpisodes) {
+            this.currentPage = currentPage + 1;
+          } else {
+            this.currentPage = currentPage;
+
+            const query = {
+              page: currentPage,
+            };
+
+            this.$router.push({ query });
+          }
+        })
+        .catch((e) => console.log('error', e));
     },
 
-    pageChange() {
+    pageChange(currentPage) {
+      const page = currentPage;
 
+      this.episodesFromAPI = [];
+
+      this.loading.firstLoading = false;
+      this.loadEpisodes(currentPage);
     },
 
     loadMoreEpisodes() {
-
-    },
-
-    resetFilters() {
-
+      this.addMoreEpisodes = true;
+      this.loadEpisodes(Number(this.currentPage));
     },
   },
 };

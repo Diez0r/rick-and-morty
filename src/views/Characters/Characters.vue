@@ -34,7 +34,7 @@ export default {
       pagination: {},
       currentPage: this.$route.query.page || 1, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
-      paramsToString: '',
+      haveSelectedFilters: this.isFiltersSelected,
       params: {
         name: '', // Нужно дополнить, что бы при загрузке уже была инфа
         status: '', // Нужно дополнить, что бы при загрузке уже была инфа
@@ -67,6 +67,12 @@ export default {
     };
   },
 
+  computed: {
+    isFiltersSelected() {
+      return Object.values(this.params).some((item) => item.length > 0);
+    },
+  },
+
   watch: {
     '$route.query': function () {
       if (!this.$route.query.page) {
@@ -78,7 +84,8 @@ export default {
   mounted() {
     if (this.$route.query.name || this.$route.query.status || this.$route.query.species || this.$route.query.gender) {
       this.fillChosenFiltersFromQuery();
-      console.log('filter');
+      console.log('filter', this.$route.query);
+      this.params = this.$route.query;
       return;
     }
 
@@ -86,8 +93,6 @@ export default {
       this.loadCharacters(this.currentPage);
       console.log('page');
     }
-
-    // TODO условия для загрузки страницы продумать
   },
 
   methods: {
@@ -133,6 +138,7 @@ export default {
               page: currentPage,
             };
 
+            console.log(query);
             this.$router.push({ query });
           }
         })
@@ -140,10 +146,13 @@ export default {
     },
 
     updateCharacters(queryString) {
-      console.log('1111', queryString);
+      this.loading.firstLoading = false;
       const promise = fetch(`https://rickandmortyapi.com/api/character/${queryString}`)
         .then((response) => {
-          if (!response.ok) throw new Error('Not 2xx response');
+          if (!response.ok) {
+            this.charactersFromAPI = [];
+            throw new Error('Not 2xx response');
+          }
           return response.json();
         })
         .then((results) => {
@@ -151,6 +160,7 @@ export default {
           results.results.forEach((item) => this.charactersFromAPI.push(item));
 
           this.pagination = results.info;
+          this.currentPage = 1;
         })
         .catch((e) => console.log('error', e));
     },
@@ -164,12 +174,6 @@ export default {
       } else {
         this.params[paramsName] = '';
         console.log('false');
-
-        query.page = this.currentPage;
-
-        this.$router.push({ query });
-
-        this.pageChange(this.currentPage);
       }
 
       Object.entries(this.params).forEach(([filterName, filterValue]) => {
@@ -182,13 +186,21 @@ export default {
     },
 
     pageChange(currentPage) {
-      this.charactersFromAPI = [];
+      const page = currentPage;
 
-      const query = {};
-      query.page = currentPage;
+      let query = this.$route.query;
+      query.page = page;
 
+      console.log(query, 'from page change');
       this.$router.push({ query });
-      this.loadCharacters(Number(currentPage));
+
+      if (!this.isFiltersSelected) {
+        this.loadCharacters(currentPage);
+      } else if (this.isFiltersSelected) {
+        this.fillChosenFiltersFromQuery();
+      }
+
+      this.currentPage = this.$route.query.page;
     },
 
     loadMoreCharacters() {
@@ -204,7 +216,9 @@ export default {
         gender: '',
       };
 
-      const query = this.params;
+      const query = {
+        page: this.currentPage,
+      };
 
       this.$router.push({ query });
     },

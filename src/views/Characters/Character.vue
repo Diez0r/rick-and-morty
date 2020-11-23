@@ -43,7 +43,7 @@ export default {
   },
 
   methods: {
-    getCharacterInfoFromAPI() {
+    getCharacterInfoFromAPI() { // 1
       const responseCharacter = fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
@@ -57,7 +57,7 @@ export default {
         });
     },
 
-    episodesIdArrayToString() {
+    episodesIdArrayToString() { // 2
       const episodesIdArray = [];
       this.characterData.episode.forEach((item) => episodesIdArray.push(item.substr(40)));
 
@@ -66,7 +66,7 @@ export default {
       this.getInfoAboutThisCharacterEpisodes();
     },
 
-    getInfoAboutThisCharacterEpisodes() {
+    getInfoAboutThisCharacterEpisodes() { // 3
       const responseEpisodes = fetch(`https://rickandmortyapi.com/api/episode/${this.episodesIdToString}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');

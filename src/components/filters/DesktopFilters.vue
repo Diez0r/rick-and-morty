@@ -63,7 +63,6 @@ export default {
         paramsName: key,
         value,
       };
-
       this.$emit('update-filters', updateParamsData);
     },
 
