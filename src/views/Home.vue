@@ -67,6 +67,8 @@ import characters from '../fakeData/characters.js';
 import locations from '../fakeData/locations';
 import episodes from '../fakeData/episodes';
 
+const axios = require('axios').default;
+
 export default {
   name: 'HomePage',
   components: {
@@ -94,6 +96,7 @@ export default {
     this.getHomePageData();
   },
 
+  // TODO сделать всю эту хуйню
   methods: {
     getHomePageData() {
       // Реализовать три запроса через Promise.all

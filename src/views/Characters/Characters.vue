@@ -102,7 +102,6 @@ export default {
     // watch на квери
     // на главной - Promise All с случайными персонажами, эпизодами, локациями
 
-
     loadCharacters(currentPage) {
       let page = currentPage;
 
@@ -229,7 +228,6 @@ export default {
         this.loadCharacters(Number(this.currentPage));
       }
 
-      // TODO проверка для того что бы в рамках отфильрованного массива загружать больше персонажей со след страницы в массив без затирания данных с текущей страницы
       if (this.isFiltersSelected) {
         this.updateCharacters(this.pagination.next.substring(42));
       }

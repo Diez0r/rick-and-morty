@@ -12,6 +12,8 @@
 import urls from '../../constants';
 import DetailedInfo from '../../layouts/Detailed.vue';
 
+const axios = require('axios').default;
+
 export default {
   name: 'LocationPage',
 
@@ -22,7 +24,7 @@ export default {
   data() {
     return {
       urls,
-      episodeId: 1, // Нужно дополнить, что бы при загрузке уже была инфа
+      locationId: this.$route.params.id, // Нужно дополнить, что бы при загрузке уже была инфа
       locationData: {},
       characterIds: [],
       characters: [],
@@ -33,33 +35,35 @@ export default {
     };
   },
 
-  async mounted() {
-    // TODO переделать запросы на Axios
-    const locationId = this.$route.params.id;
-
-    const responseLocation = await fetch(`https://rickandmortyapi.com/api/location/${locationId}`);
-    const resultLocation = await responseLocation.json();
-
-    if (responseLocation.ok) {
-      this.loading.data = false;
-      this.locationData = resultLocation;
-    }
-
-    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
-    const charactersToJSON = await responseCharacters.json();
-
-    const result = charactersToJSON.results;
-
-    const charactersForCurrentLocation = result.filter((item) => item.origin.url.includes(`https://rickandmortyapi.com/api/location/${locationId}`));
-
-    if (responseCharacters.ok) {
-      this.loading.additionalContent = false;
-      this.characters = charactersForCurrentLocation;
-    }
+  mounted() {
+    this.getLocationDataFromAPI();
   },
 
   methods: {
-    //  нужно два запроса
+    getLocationDataFromAPI() {
+      axios.get(`https://rickandmortyapi.com/api/location/${this.locationId}`)
+        .then((response) => {
+          this.loading.data = false;
+          this.locationData = response.data;
+          return response.data.residents.map((item) => item.substring(42));
+        })
+        .catch((e) => {
+          throw new Error(e, 'Not 2xx response');
+        })
+        .then((residents) => axios.get(`https://rickandmortyapi.com/api/character/${residents}`))
+        .then((result) => {
+          console.log(result.data);
+          this.loading.additionalContent = false;
+          if (result.data.length) {
+            this.characters = result.data;
+          } else {
+            this.characters.push(result.data);
+          }
+        })
+        .catch((e) => {
+          throw new Error(e, 'Not 2xx response');
+        });
+    },
   },
 };
 </script>

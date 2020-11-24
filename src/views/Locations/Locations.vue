@@ -21,6 +21,8 @@ import urls from '../../constants';
 import Catalog from '../../layouts/Catalog.vue';
 import locations from '../../fakeData/locations';
 
+const axios = require('axios').default;
+
 export default {
   name: 'LocationsPage',
   components: {
@@ -30,8 +32,8 @@ export default {
   data() {
     return {
       urls,
-      //locations,
-      locationsFromAPI : [],
+      locations,
+      locationsFromAPI: [],
       pagination: {},
       loading: {
         firstLoading: true,
@@ -55,30 +57,21 @@ export default {
     };
   },
 
-  async mounted() {
+  mounted() {
     // TODO переделать запросы на Axios
-    const responseLocations = await fetch('https://rickandmortyapi.com/api/location/');
-    const locationsToJSON = await responseLocations.json();
-
-    const resolvedInfo = await locationsToJSON.info;
-    const resolvedLocations = await locationsToJSON.results;
-
-    this.pagination = resolvedInfo;
-
-    if (!resolvedInfo.prev) {
-      this.currentPage = 1;
-    } else if (resolvedInfo.prev < 9) {
-      this.currentPage = resolvedInfo.next.toString().slice(-1);
-    } else {
-      this.currentPage = resolvedInfo.next.toString().slice(-2);
-    }
-
-    if (responseLocations.ok) {
-      resolvedLocations.forEach((item) => this.locationsFromAPI.push(item));
-    }
+    this.getLocationsFromAPI();
   },
 
   methods: {
+    getLocationsFromAPI() {
+      axios.get('https://rickandmortyapi.com/api/location/')
+        .then((result) => {
+          console.log(result);
+          this.pagination = result.data.info;
+          this.locationsFromAPI = result.data.results;
+        })
+    },
+
     updateParams() {
 
     },
@@ -92,7 +85,6 @@ export default {
     },
 
     resetFilters() {
-
     },
   },
 };

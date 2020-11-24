@@ -72,7 +72,8 @@ export default {
           } else {
             this.episodes.push(result);
           }
-        });
+        })
+        .catch((e) => console.log('error', e));
     },
   },
 };
