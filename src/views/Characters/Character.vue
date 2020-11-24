@@ -43,8 +43,8 @@ export default {
   },
 
   methods: {
-    getCharacterInfoFromAPI() { // 1
-      const responseCharacter = fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`)
+    getCharacterInfoFromAPI() {
+      fetch(`https://rickandmortyapi.com/api/character/${this.characterId}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
           return response.json();
@@ -53,21 +53,13 @@ export default {
           this.loading.data = false;
           this.characterData = result;
 
-          this.episodesIdArrayToString();
-        });
-    },
-
-    episodesIdArrayToString() { // 2
-      const episodesIdArray = [];
-      this.characterData.episode.forEach((item) => episodesIdArray.push(item.substr(40)));
-
-      this.episodesIdToString = episodesIdArray.join(',');
-
-      this.getInfoAboutThisCharacterEpisodes();
-    },
-
-    getInfoAboutThisCharacterEpisodes() { // 3
-      const responseEpisodes = fetch(`https://rickandmortyapi.com/api/episode/${this.episodesIdToString}`)
+          return result.episode.map((item) => item.substring(40));
+        })
+        .then((episodes) => {
+          this.episodesIdToString = episodes.join(',');
+          return episodes.join(',');
+        })
+        .then((ep) => fetch(`https://rickandmortyapi.com/api/episode/${ep}`))
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
           return response.json();

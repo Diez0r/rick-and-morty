@@ -56,6 +56,7 @@ export default {
   },
 
   async mounted() {
+    // TODO переделать запросы на Axios
     const responseLocations = await fetch('https://rickandmortyapi.com/api/location/');
     const locationsToJSON = await responseLocations.json();
 

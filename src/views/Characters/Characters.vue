@@ -32,9 +32,8 @@ export default {
       urls,
       charactersFromAPI: [],
       pagination: {},
-      currentPage: this.$route.query.page || 1, // Нужно дополнить, что бы при загрузке уже была инфа
+      currentPage: this.$route.query.page, // Нужно дополнить, что бы при загрузке уже была инфа
       addMoreCharacters: false,
-      haveSelectedFilters: this.isFiltersSelected,
       params: {
         name: '', // Нужно дополнить, что бы при загрузке уже была инфа
         status: '', // Нужно дополнить, что бы при загрузке уже была инфа
@@ -98,7 +97,6 @@ export default {
   methods: {
     // fetch https://learn.javascript.ru/fetch
     //  https://learn.javascript.ru/async
-    // TODO переделать запросы на промисах
     // пагинация - подставляем в роут и в запрос номер страницы +
     // loadMore - берем массив персонажей с текущей страницы и добавляем к нему массив со следющей страницы
     // watch на квери
@@ -112,12 +110,16 @@ export default {
         page = currentPage + 1;
       }
 
-      const promise = fetch(`https://rickandmortyapi.com/api/character/?page=${page}`)
+      fetch(`https://rickandmortyapi.com/api/character/?page=${page}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
           return response.json();
         })
         .then((results) => {
+          if (!this.addMoreCharacters) {
+            this.charactersFromAPI = [];
+          }
+
           results.results.forEach((item) => this.charactersFromAPI.push(item));
 
           this.pagination = results.info;
@@ -147,20 +149,33 @@ export default {
 
     updateCharacters(queryString) {
       this.loading.firstLoading = false;
-      const promise = fetch(`https://rickandmortyapi.com/api/character/${queryString}`)
+      fetch(`https://rickandmortyapi.com/api/character/${queryString}`)
         .then((response) => {
           if (!response.ok) {
-            this.charactersFromAPI = [];
+            if (!this.addMoreCharacters) {
+              this.charactersFromAPI = [];
+            }
             throw new Error('Not 2xx response');
           }
           return response.json();
         })
         .then((results) => {
-          this.charactersFromAPI = [];
+          if (!this.addMoreCharacters) {
+            this.charactersFromAPI = [];
+          }
           results.results.forEach((item) => this.charactersFromAPI.push(item));
 
           this.pagination = results.info;
-          this.currentPage = 1;
+
+          if (!this.$route.query.page) {
+            this.currentPage = 1;
+            console.log('salam');
+          }
+
+          if (this.addMoreCharacters) {
+            this.currentPage++;
+            console.log('vse ok', this.currentPage);
+          }
         })
         .catch((e) => console.log('error', e));
     },
@@ -176,6 +191,8 @@ export default {
         console.log('false');
       }
 
+      if (this.params.page) delete this.params.page;
+
       Object.entries(this.params).forEach(([filterName, filterValue]) => {
         if (filterValue.length > 0) {
           query[filterName] = filterValue;
@@ -186,26 +203,36 @@ export default {
     },
 
     pageChange(currentPage) {
+      this.addMoreCharacters = false;
       const page = currentPage;
 
-      let query = this.$route.query;
+      const query = { ...this.$route.query };
       query.page = page;
 
-      console.log(query, 'from page change');
+      this.currentPage = currentPage;
+
+      console.log(query, 'from page change', this.currentPage);
       this.$router.push({ query });
 
       if (!this.isFiltersSelected) {
         this.loadCharacters(currentPage);
+        console.log('loadcharacters');
       } else if (this.isFiltersSelected) {
         this.fillChosenFiltersFromQuery();
+        console.log('filters');
       }
-
-      this.currentPage = this.$route.query.page;
     },
 
     loadMoreCharacters() {
       this.addMoreCharacters = true;
-      this.loadCharacters(Number(this.currentPage));
+      if (!this.isFiltersSelected) {
+        this.loadCharacters(Number(this.currentPage));
+      }
+
+      // TODO проверка для того что бы в рамках отфильрованного массива загружать больше персонажей со след страницы в массив без затирания данных с текущей страницы
+      if (this.isFiltersSelected) {
+        this.updateCharacters(this.pagination.next.substring(42));
+      }
     },
 
     resetFilters() {
@@ -216,11 +243,7 @@ export default {
         gender: '',
       };
 
-      const query = {
-        page: this.currentPage,
-      };
-
-      this.$router.push({ query });
+      this.$router.push({ });
     },
 
     fillChosenFiltersFromQuery() {
@@ -234,6 +257,8 @@ export default {
           queryString = `?${substring}`;
         }
       });
+
+      console.log('fillChosenFiltersFromQuery', this.currentPage);
 
       this.updateCharacters(queryString);
     },

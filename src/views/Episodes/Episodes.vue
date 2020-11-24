@@ -51,7 +51,7 @@ export default {
         page = currentPage + 1;
       }
 
-      const promise = fetch(`https://rickandmortyapi.com/api/episode/?page=${page}`)
+      fetch(`https://rickandmortyapi.com/api/episode/?page=${page}`)
         .then((response) => {
           if (!response.ok) throw new Error('Not 2xx response');
           return response.json();

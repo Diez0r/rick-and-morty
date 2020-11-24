@@ -34,6 +34,7 @@ export default {
   },
 
   async mounted() {
+    // TODO переделать запросы на Axios
     const locationId = this.$route.params.id;
 
     const responseLocation = await fetch(`https://rickandmortyapi.com/api/location/${locationId}`);

@@ -22,7 +22,7 @@ export default {
   data() {
     return {
       urls,
-      episodeId: null, // Нужно дополнить, что бы при загрузке уже была инфа
+      episodeId: this.$route.params.id,
       episodeData: {},
       characterIds: [],
       characters: [],
@@ -33,31 +33,34 @@ export default {
     };
   },
 
-  async mounted() {
-    this.episodeId = this.$route.params.id;
-
-    const responseEpisode = await fetch(`https://rickandmortyapi.com/api/episode/${this.episodeId}`);
-    const resultEpisodeToJSON = await responseEpisode.json();
-
-    if (responseEpisode.ok) {
-      this.loading.data = false;
-      this.episodeData = resultEpisodeToJSON;
-    }
-
-    const responseCharacters = await fetch('https://rickandmortyapi.com/api/character/');
-    const charactersToJSON = await responseCharacters.json();
-
-    const result = charactersToJSON.results;
-    const characterForCurrentEpisodes = result.filter((item) => item.episode.includes(`https://rickandmortyapi.com/api/episode/${this.episodeId}`));
-
-    if (responseCharacters.ok) {
-      this.loading.additionalContent = false;
-      this.characters = characterForCurrentEpisodes;
-    }
+  mounted() {
+    // TODO переделать запросы на промисах
+    this.getEpisodeDataFromAPI();
   },
 
   methods: {
-    //  нужно два запроса
+    getEpisodeDataFromAPI() {
+      fetch(`https://rickandmortyapi.com/api/episode/${this.episodeId}`)
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((result) => {
+          this.loading.data = false;
+          this.episodeData = result;
+
+          return result.characters.map((item) => item.substring(42));
+        })
+        .then((char) => fetch(`https://rickandmortyapi.com/api/character/${char}`))
+        .then((response) => {
+          if (!response.ok) throw new Error('Not 2xx response');
+          return response.json();
+        })
+        .then((result) => {
+          this.loading.additionalContent = false;
+          this.characters = result;
+        });
+    },
   },
 };
 </script>
