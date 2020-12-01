@@ -41,9 +41,12 @@ export default {
         moreItems: false,
       },
       addMoreLocations: false,
-      paramsToSting: '',
+      paramsToString: '',
       currentPage: 1, // Нужно дополнить, что бы при загрузке уже была инфа
-      params: {},
+      params: {
+        type: '',
+        dimension: '',
+      },
       filters: [
         {
           title: 'type',
@@ -66,14 +69,31 @@ export default {
     getLocationsFromAPI() {
       axios.get('https://rickandmortyapi.com/api/location/')
         .then((result) => {
-          console.log(result);
           this.pagination = result.data.info;
           this.locationsFromAPI = result.data.results;
-        })
+        });
     },
 
-    updateParams() {
+    updateParams({ value, paramsName }) {
+      const query = {};
 
+      if (this.params[paramsName] !== value) {
+        this.params[paramsName] = value;
+        console.log('true');
+      } else {
+        this.params[paramsName] = '';
+        console.log('false');
+      }
+
+      if (this.params.page) delete this.params.page;
+
+      Object.entries(this.params).forEach(([filterName, filterValue]) => {
+        if (filterValue.length > 0) {
+          query[filterName] = filterValue;
+        }
+      });
+
+      this.$router.push({ query });
     },
 
     pageChange() {

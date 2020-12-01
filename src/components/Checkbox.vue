@@ -28,7 +28,7 @@ export default {
 
   props: {
     value: {
-      type: [String, Number, Array],
+      type: [String, Number, Array, Object],
       default: null,
     },
 
