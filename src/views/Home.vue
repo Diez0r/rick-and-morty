@@ -36,7 +36,7 @@
       class="home__section"
       title="Characters"
       :amount-skeleton-card="amountCardPreview"
-      :items="characters"
+      :items="charactersFromAPI"
       :loading="loading.characters"
     />
 
@@ -44,7 +44,7 @@
       class="home__section"
       title="Locations"
       :amount-skeleton-card="amountCardPreview"
-      :items="locations"
+      :items="locationsFromAPI"
       :loading="loading.locations"
     />
 
@@ -52,7 +52,7 @@
       class="home__section"
       title="Episodes"
       :amount-skeleton-card="amountCardPreview"
-      :items="episodes"
+      :items="episodesFromAPI"
       :loading="loading.episodes"
     />
   </div>
@@ -82,6 +82,9 @@ export default {
       characters,
       locations,
       episodes,
+      charactersFromAPI: [],
+      episodesFromAPI: [],
+      locationsFromAPI: [],
       loading: {
         characters: false,
         locations: false,
@@ -94,28 +97,83 @@ export default {
 
   mounted() {
     this.getHomePageData();
+    this.generateArrayRandomNumbers(671);
   },
 
   // TODO сделать всю эту хуйню
   methods: {
     getHomePageData() {
       // Реализовать три запроса через Promise.all
+
+      //Promise.all([
+        this.getData('url', 'character')
+
+        this.getData('url', 'episode')
+
+        this.getData('url', 'location')
+      //])
+        //.then((res) => console.log(res))
+        //.catch((e) => console.log('error', e));
     },
 
     // eslint-disable-next-line no-unused-vars
     async getData(url, type) {
       // Функция принимает url запроса и тип (characters, location, episodes)
       // В запросе нужно сформировать массив с id и этот массив передавать в запрос
+      let idArray = [];
+
+      if (type === 'character') {
+        idArray = this.generateArrayRandomNumbers(671);
+      } else if (type === 'location') {
+        idArray = this.generateArrayRandomNumbers(108);
+      } else if (type === 'episode') {
+        idArray = this.generateArrayRandomNumbers(41);
+      }
+
+      console.log(idArray, 'idArray');
+
+      let promise = await fetch(`https://rickandmortyapi.com/api/${type}/${idArray}`)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Not 2xx response');
+          }
+          return response.json();
+        })
+        .then((results) => {
+
+
+          if (type === 'character') {
+            results.forEach((element) => this.charactersFromAPI.push(element));
+          } else if (type === 'location') {
+            results.forEach((element) => this.locationsFromAPI.push(element));
+          } else if (type === 'episode') {
+            results.forEach((element) => this.episodesFromAPI.push(element));
+          }
+
+          return results;
+        })
+        .catch((e) => console.log('error', e));
+
+      return promise;
     },
 
     // eslint-disable-next-line no-unused-vars
     generateArrayRandomNumbers(maxIndex) {
       // Функция которая генерирует массив со случайными id
+      const generatedRandomIdsArray = [];
+
+      for (let i = 0; i <= this.amountCardPreview - 1; i++) {
+        generatedRandomIdsArray.push(this.generateRandomNumber(maxIndex));
+      }
+      //console.log(generatedRandomIdsArray, 'random ids');
+
+      return generatedRandomIdsArray;
     },
 
     // eslint-disable-next-line no-unused-vars
     generateRandomNumber(maxIndex) {
       // функция которая генерирует случайное число от 1 до maxIndex
+      return Math.floor(1 + Math.random() * (maxIndex + 1 - 1));
     },
   },
 };
