@@ -67,8 +67,6 @@ import characters from '../fakeData/characters.js';
 import locations from '../fakeData/locations';
 import episodes from '../fakeData/episodes';
 
-const axios = require('axios').default;
-
 export default {
   name: 'HomePage',
   components: {
@@ -102,35 +100,35 @@ export default {
 
   // TODO сделать всю эту хуйню
   methods: {
-    getHomePageData() {
+    async getHomePageData() {
       // Реализовать три запроса через Promise.all
 
-      //Promise.all([
-        this.getData('url', 'character')
+      let urls = [
+        'https://rickandmortyapi.com/api/character',
+        'https://rickandmortyapi.com/api/episode',
+        'https://rickandmortyapi.com/api/location',
+      ];
 
-        this.getData('url', 'episode')
+      const requests = urls.map((url) => fetch(url));
 
-        this.getData('url', 'location')
-      //])
-        //.then((res) => console.log(res))
-        //.catch((e) => console.log('error', e));
+      try {
+        const response = await Promise.all(requests)
+          .then((results) => Promise.all(results.map((item) => item.json())))
+          .then((count) => count.map((item) => item.info.count));
+
+        await this.getData('character', response[0]);
+        await this.getData('episode', response[1]);
+        await this.getData('location', response[2]);
+      } catch (e) {
+        console.log('error', e);
+      }
     },
 
     // eslint-disable-next-line no-unused-vars
-    async getData(url, type) {
+    async getData(type, maxIndex) {
       // Функция принимает url запроса и тип (characters, location, episodes)
       // В запросе нужно сформировать массив с id и этот массив передавать в запрос
-      let idArray = [];
-
-      if (type === 'character') {
-        idArray = this.generateArrayRandomNumbers(671);
-      } else if (type === 'location') {
-        idArray = this.generateArrayRandomNumbers(108);
-      } else if (type === 'episode') {
-        idArray = this.generateArrayRandomNumbers(41);
-      }
-
-      console.log(idArray, 'idArray');
+        const idArray = this.generateArrayRandomNumbers(maxIndex);
 
       let promise = await fetch(`https://rickandmortyapi.com/api/${type}/${idArray}`)
         .then((response) => {
@@ -140,7 +138,6 @@ export default {
           return response.json();
         })
         .then((results) => {
-
 
           if (type === 'character') {
             results.forEach((element) => this.charactersFromAPI.push(element));
@@ -165,7 +162,8 @@ export default {
       for (let i = 0; i <= this.amountCardPreview - 1; i++) {
         generatedRandomIdsArray.push(this.generateRandomNumber(maxIndex));
       }
-      //console.log(generatedRandomIdsArray, 'random ids');
+
+      // let filledArray = new Array(10).fill(null).map(()=> ({'hello':'goodbye'}))
 
       return generatedRandomIdsArray;
     },
@@ -173,7 +171,7 @@ export default {
     // eslint-disable-next-line no-unused-vars
     generateRandomNumber(maxIndex) {
       // функция которая генерирует случайное число от 1 до maxIndex
-      return Math.floor(1 + Math.random() * (maxIndex + 1 - 1));
+      return Math.floor(1 + Math.random() * maxIndex);
     },
   },
 };
